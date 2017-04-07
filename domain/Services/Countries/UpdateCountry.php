@@ -3,16 +3,20 @@
 namespace Domain\Services\Countries;
 
 use Domain\Entity\Country;
-use Domain\Factory\Entity\CountryFactory;
 use Domain\Repository\Countries;
 use Domain\Services\Service;
 
-class GetCountryById implements Service
+class UpdateCountry implements Service
 {
     /**
      * @var Countries
      */
     private $countries;
+
+    /**
+     * @var Country
+     */
+    private $country;
 
     /**
      * @var int
@@ -32,6 +36,16 @@ class GetCountryById implements Service
     /**
      * Set country will be created
      *
+     * @param Country $country
+     */
+    public function setCountry(Country $country)
+    {
+        $this->country = $country;
+    }
+
+    /**
+     * Set country will be created
+     *
      * @param int $id
      */
     public function setId(int $id)
@@ -39,23 +53,19 @@ class GetCountryById implements Service
         $this->id = $id;
     }
 
+
     /**
      * Execute service
-     * @return Country
-     * @throws \InvalidArgumentException
+     * @return boolean
      */
     public function fire()
     {
-        if (!$this->id) {
-            throw new \InvalidArgumentException('Invalid Argument');
-        }
+        // REGRAS / EVENTOS - BEFORE
 
-        $record = $this->countries->findById($this->id);
+        $updated = $this->countries->update($this->id, $this->country);
 
-        if ($record) {
-            return CountryFactory::create($record);
-        }
+        // REGRAS / EVENTOS - AFTER
 
-        return false;
+        return $updated;
     }
 }

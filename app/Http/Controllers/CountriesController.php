@@ -9,6 +9,7 @@ use App\Models\Country;
 use Domain\Factory\Entity\CountryFactory;
 use Domain\Services\Countries\CreateCountry;
 use Domain\Services\Countries\GetCountryById;
+use Domain\Services\Countries\UpdateCountry;
 
 class CountriesController extends Controller
 {
@@ -34,7 +35,7 @@ class CountriesController extends Controller
      */
     public function store(CreateCountryRequest $request, CreateCountry $createCountry)
     {
-        $country = CountryFactory::createFromArray($request->all());
+        $country = CountryFactory::create($request->all());
         $createCountry->setCountry($country);
 
         if ($createCountry->fire()) {
@@ -54,14 +55,18 @@ class CountriesController extends Controller
      */
     public function show($id, GetCountryById $getCountryById)
     {
-        $getCountryById->setId($id);
-        $country = $getCountryById->fire();
+        try {
+            $getCountryById->setId($id);
+            $country = $getCountryById->fire();
 
-        if ($country) {
-            return fractal($country, new CountryTransformer())->respond();
+            if ($country) {
+                return fractal($country, new CountryTransformer())->respond();
+            }
+
+            return response(['error' => 'Not Found'], 404);
+        } catch (\Exception $e) {
+            return response(['error' => 'Whooooops!'], 500);
         }
-
-        return ['error' => 'Whooooops!'];
     }
 
     /**
@@ -70,19 +75,19 @@ class CountriesController extends Controller
      * @param  UpdateCountryRequest $request
      * @param  int $id
      * @return \Illuminate\Http\Response
+     * @throws \RuntimeException
      */
-    public function update(UpdateCountryRequest $request, $id)
+    public function update(UpdateCountryRequest $request, $id, UpdateCountry $updateCountry)
     {
-        $country = Country::find($id);
-        $country->name = $request->get('name');
-        $country->slug = str_slug($request->get('name'));
-        $country->active = false;
+        $country = CountryFactory::create($request->all());
+        $updateCountry->setCountry($country);
+        $updateCountry->setId($id);
 
-        if ($country->save()) {
-            return $country;
+        if ($updateCountry->fire()) {
+            return fractal($country, new CountryTransformer())->respond();
         }
 
-        return ['error' => 'Whooooops!'];
+        throw new \RuntimeException('Impossible to create this country');
     }
 
     /**

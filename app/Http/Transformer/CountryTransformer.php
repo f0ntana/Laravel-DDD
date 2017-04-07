@@ -13,8 +13,7 @@ class CountryTransformer extends TransformerAbstract
             'id' => (int) $country->getId(),
             'name' => $country->getName(),
             'slug' => $country->getSlug(),
-            'active' => (boolean) $country->isActive(),
-            'bacalhau' => 'Agora VAI!!!',
+            'active' => (boolean) $country->isActive()
         ];
     }
 }

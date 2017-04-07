@@ -31,14 +31,42 @@ class Countries extends Repository
 
     /**
      * @param $id
-     * @return Country $country
+     * @return bool
      */
     public function findById($id)
     {
         try {
-            return $find = $this->db()->table('countries')->find($id);
+            return $this->db()->table('countries')->find($id);
         } catch (\Exception $e) {
             return false;
         }
     }
+
+    /**
+     * @param $id, Country $country
+     * @return bool
+     */
+
+    public function update($id, Country $country)
+    {
+        try {
+            $updated = $this->db()->table('countries')
+                ->where('id', '=', $id)
+                ->update([
+                    'name' => $country->getName(),
+                    'slug' => $country->getSlug(),
+                    'active' => $country->isActive(),
+                ]);
+
+            if ($updated) {
+                $country->setId($updated);
+            }
+
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+
 }
